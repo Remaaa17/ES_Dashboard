@@ -16,9 +16,9 @@ import {
 } from 'lucide-react';
 
 // --- CONFIGURATION ---
-const SUPABASE_URL = ""; 
-const SUPABASE_ANON_KEY = ""; 
-const GEMINI_API_KEY = ""; // Provided by environment
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || ""; 
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || ""; 
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
 const App = () => {
   const [supabase, setSupabase] = useState(null);

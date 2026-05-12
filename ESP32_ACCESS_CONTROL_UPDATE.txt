@@ -1,0 +1,223 @@
+// ============================================
+// ESP32 Code Update - Add Access Control
+// ============================================
+
+// الخطوة 1: إضافة متغير لحالة الوصول في SensorBatch
+// ابحث عن:
+struct SensorBatch {
+  String rfid;
+  int ldr;
+  bool ir1;
+  bool ir2;
+  float soil;
+  int brightness1;
+  int brightness2;
+  unsigned long rfidCount;
+  String timestamp;
+};
+
+// غيرها لـ:
+struct SensorBatch {
+  String rfid;
+  bool accessGranted;  // ← جديد
+  int ldr;
+  bool ir1;
+  bool ir2;
+  float soil;
+  int brightness1;
+  int brightness2;
+  unsigned long rfidCount;
+  String timestamp;
+};
+
+// ============================================
+// الخطوة 2: إضافة متغير global لحالة الوصول
+// ============================================
+
+// أضف بعد RFID VARS:
+bool lastAccessGranted = false;  // ← جديد
+
+// ============================================
+// الخطوة 3: تحديث handleRFID() لحفظ حالة الوصول
+// ============================================
+
+// ابحث عن:
+  if (checkUID(uid)) {
+    rfidAccessCount++;
+    preferences.putULong("rfid_count", rfidAccessCount);
+    debugPrint("✓ Access Granted | Count: " + String(rfidAccessCount));
+
+    // Turn on LED (non-blocking)
+    digitalWrite(GATE_LED, HIGH);
+    rfidLedActive = true;
+    rfidLedStartTime = now;
+
+// أضف بعدها:
+    lastAccessGranted = true;  // ← جديد
+
+// ============================================
+// ابحث عن:
+  } else {
+    debugPrint("✗ Access Denied");
+    // Start blinking sequence (non-blocking)
+    rfidDeniedBlinkCount = 4; // 2 blinks = 4 state changes
+
+// أضف بعدها:
+    lastAccessGranted = false;  // ← جديد
+
+// ============================================
+// الخطوة 4: تحديث sendBatchToSupabase()
+// ============================================
+
+// ابحث عن:
+void sendBatchToSupabase() {
+  // Prepare batch data with mutex protection
+  if (xSemaphoreTake(dataMutex, portMAX_DELAY)) {
+    currentBatch.rfid = lastUID;
+    currentBatch.ldr = ldrValue;
+
+// أضف بعد currentBatch.rfid:
+    currentBatch.accessGranted = lastAccessGranted;  // ← جديد
+
+// ============================================
+// الخطوة 5: تحديث httpTask() لإرسال access_granted
+// ============================================
+
+// ابحث عن:
+      doc["device_id"]   = DEVICE_ID;
+      doc["timestamp"]   = localBatch.timestamp;
+      doc["rfid_uid"]    = localBatch.rfid;
+      doc["rfid_count"]  = localBatch.rfidCount;
+
+// أضف بعد rfid_uid:
+      doc["access_granted"] = localBatch.accessGranted;  // ← جديد
+
+// ============================================
+// الكود الكامل بعد التعديل:
+// ============================================
+
+/*
+struct SensorBatch {
+  String rfid;
+  bool accessGranted;
+  int ldr;
+  bool ir1;
+  bool ir2;
+  float soil;
+  int brightness1;
+  int brightness2;
+  unsigned long rfidCount;
+  String timestamp;
+};
+
+bool lastAccessGranted = false;
+
+void handleRFID() {
+  // ... existing code ...
+  
+  if (checkUID(uid)) {
+    rfidAccessCount++;
+    preferences.putULong("rfid_count", rfidAccessCount);
+    debugPrint("✓ Access Granted | Count: " + String(rfidAccessCount));
+    
+    lastAccessGranted = true;  // ← جديد
+    
+    digitalWrite(GATE_LED, HIGH);
+    rfidLedActive = true;
+    rfidLedStartTime = now;
+    
+    if (Blynk.connected()) {
+      Blynk.virtualWrite(VPIN_RFID_UID, uid);
+      Blynk.virtualWrite(VPIN_RFID_COUNT, rfidAccessCount);
+      Blynk.virtualWrite(VPIN_RFID_LED, HIGH);
+    }
+  } else {
+    debugPrint("✗ Access Denied");
+    
+    lastAccessGranted = false;  // ← جديد
+    
+    rfidDeniedBlinkCount = 4;
+    rfidDeniedBlinkTime = now;
+    rfidDeniedBlinkState = true;
+    digitalWrite(GATE_LED2, HIGH);
+  }
+  
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
+}
+
+void sendBatchToSupabase() {
+  if (xSemaphoreTake(dataMutex, portMAX_DELAY)) {
+    currentBatch.rfid = lastUID;
+    currentBatch.accessGranted = lastAccessGranted;  // ← جديد
+    currentBatch.ldr = ldrValue;
+    currentBatch.ir1 = ir1Detected;
+    currentBatch.ir2 = ir2Detected;
+    currentBatch.soil = soilMoisturePct;
+    currentBatch.brightness1 = brightness1;
+    currentBatch.brightness2 = brightness2;
+    currentBatch.rfidCount = rfidAccessCount;
+    currentBatch.timestamp = getTimestamp();
+    
+    dataReadyToSend = true;
+    xSemaphoreGive(dataMutex);
+  }
+}
+
+void httpTask(void* parameter) {
+  while (true) {
+    if (dataReadyToSend && WiFi.status() == WL_CONNECTED) {
+      
+      SensorBatch localBatch;
+      if (xSemaphoreTake(dataMutex, portMAX_DELAY)) {
+        localBatch = currentBatch;
+        dataReadyToSend = false;
+        xSemaphoreGive(dataMutex);
+      }
+
+      HTTPClient http;
+      http.setTimeout(5000);
+      http.begin(SUPABASE_URL + "/rest/v1/sensor_readings");
+      http.addHeader("apikey",        SUPABASE_KEY);
+      http.addHeader("Authorization", "Bearer " + SUPABASE_KEY);
+      http.addHeader("Content-Type",  "application/json");
+      http.addHeader("Prefer",        "return=minimal");
+
+      DynamicJsonDocument doc(512);
+      doc["device_id"]   = DEVICE_ID;
+      doc["timestamp"]   = localBatch.timestamp;
+      doc["rfid_uid"]    = localBatch.rfid;
+      doc["access_granted"] = localBatch.accessGranted;  // ← جديد
+      doc["rfid_count"]  = localBatch.rfidCount;
+      doc["ldr_value"]   = localBatch.ldr;
+      doc["ir1_motion"]  = localBatch.ir1;
+      doc["ir2_motion"]  = localBatch.ir2;
+      doc["soil_moisture"] = localBatch.soil;
+      doc["brightness1"] = localBatch.brightness1;
+      doc["brightness2"] = localBatch.brightness2;
+
+      String json;
+      serializeJson(doc, json);
+
+      int httpCode = http.POST(json);
+
+      if (httpCode == 200 || httpCode == 201 || httpCode == 204) {
+        debugPrint("✓ Batch sent to Supabase");
+      } else {
+        Serial.println("✗ Supabase failed (HTTP " + String(httpCode) + ")");
+      }
+
+      http.end();
+    }
+    
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+  }
+}
+*/
+
+// ============================================
+// ملاحظات:
+// ============================================
+// 1. بعد التعديل، ارفع الكود على ESP32
+// 2. نفذ SUPABASE_ADD_ACCESS_CONTROL.sql في Supabase
+// 3. Dashboard هيعرض Authorized/Unauthorized تلقائياً
