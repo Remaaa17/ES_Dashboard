@@ -5,6 +5,7 @@ import { useSensorData } from './hooks/useSensorData';
 import { useNotifications } from './hooks/useNotifications';
 import { useAI } from './hooks/useAI';
 import { useChatAI } from './hooks/useChatAI';
+import { useDailyStats } from './hooks/useDailyStats';
 import { processCriticalAlerts } from './utils/alerts';
 import { calculateAnalytics } from './utils/analytics';
 import { exportToCSV, exportToPDF, loadJsPDF } from './utils/export';
@@ -41,6 +42,9 @@ const App = () => {
 
   // Analytics
   const analytics = useMemo(() => calculateAnalytics(data), [data]);
+
+  // Auto-save daily statistics to Supabase
+  useDailyStats(supabase, analytics);
 
   // Load jsPDF on mount
   useEffect(() => {
