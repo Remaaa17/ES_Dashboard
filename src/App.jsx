@@ -1,8 +1,10 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useSupabase } from './hooks/useSupabase';
 import { useSensorData } from './hooks/useSensorData';
 import { useNotifications } from './hooks/useNotifications';
 import { useAI } from './hooks/useAI';
+import { useChatAI } from './hooks/useChatAI';
 import { processCriticalAlerts } from './utils/alerts';
 import { calculateAnalytics } from './utils/analytics';
 import { exportToCSV, exportToPDF, loadJsPDF } from './utils/export';
@@ -14,6 +16,8 @@ import OverviewPage from './components/pages/OverviewPage';
 import RFIDPage from './components/pages/RFIDPage';
 import LightingPage from './components/pages/LightingPage';
 import SoilPage from './components/pages/SoilPage';
+import PredictionsPage from './components/pages/PredictionsPage';
+import ChatbotPage from './components/pages/ChatbotPage';
 
 // Import icons
 import { Info, Cpu, Database } from 'lucide-react';
@@ -27,6 +31,7 @@ const App = () => {
   const { supabase, loading: supabaseLoading } = useSupabase();
   const { notifications, addNotification } = useNotifications();
   const { aiInsight, isAiLoading, getAiPrediction } = useAI(addNotification);
+  const { sendChatMessage, isChatLoading } = useChatAI();
   
   const handleCriticalAlert = (reading) => {
     processCriticalAlerts(reading, addNotification);
@@ -54,7 +59,11 @@ const App = () => {
   };
 
   const handleAIForecast = () => {
-    getAiPrediction(activeTab, analytics);
+    getAiPrediction('predictions', analytics);
+  };
+
+  const handleChatMessage = async (message) => {
+    return await sendChatMessage(message, analytics);
   };
 
   if (supabaseLoading || dataLoading) {
@@ -70,18 +79,21 @@ const App = () => {
         setIsDarkMode={setIsDarkMode}
       />
 
-      <main className="flex-1 lg:ml-64 p-6 lg:p-12 transition-all">
-        <Header
-          activeTab={activeTab}
-          analytics={analytics}
-          lastUpdate={lastUpdate}
-          isAiLoading={isAiLoading}
-          isGeneratingPDF={isGeneratingPDF}
-          onAIForecast={handleAIForecast}
-          onExportPDF={handleExportPDF}
-          onExportCSV={handleExportCSV}
-          isDarkMode={isDarkMode}
-        />
+      <main className={`flex-1 lg:ml-64 transition-all ${activeTab === 'chatbot' ? 'p-0' : 'p-6 lg:p-12'}`}>
+        {/* Render Header only for non-chatbot pages */}
+        {activeTab !== 'chatbot' && (
+          <Header
+            activeTab={activeTab}
+            analytics={analytics}
+            lastUpdate={lastUpdate}
+            isAiLoading={isAiLoading}
+            isGeneratingPDF={isGeneratingPDF}
+            onAIForecast={handleAIForecast}
+            onExportPDF={handleExportPDF}
+            onExportCSV={handleExportCSV}
+            isDarkMode={isDarkMode}
+          />
+        )}
 
         {/* Overview Page */}
         {activeTab === 'overview' && (
@@ -89,6 +101,17 @@ const App = () => {
             analytics={analytics}
             data={data}
             notifications={notifications}
+            isDarkMode={isDarkMode}
+          />
+        )}
+
+        {/* Predictions Page */}
+        {activeTab === 'predictions' && (
+          <PredictionsPage
+            analytics={analytics}
+            aiInsight={aiInsight}
+            isAiLoading={isAiLoading}
+            onAIForecast={handleAIForecast}
             isDarkMode={isDarkMode}
           />
         )}
@@ -117,6 +140,16 @@ const App = () => {
           />
         )}
 
+        {/* Chatbot Page */}
+        {activeTab === 'chatbot' && (
+          <ChatbotPage
+            analytics={analytics}
+            isDarkMode={isDarkMode}
+            onSendMessage={handleChatMessage}
+            isChatLoading={isChatLoading}
+          />
+        )}
+
         {/* About Page */}
         {activeTab === 'about' && (
           <div className="space-y-8 animate-in fade-in duration-700 text-left">
@@ -125,7 +158,7 @@ const App = () => {
                 <Info size={24} className="text-blue-500" />
                 <h3 className="text-xl font-black uppercase tracking-tight">Project Overview</h3>
               </div>
-              <p className="text-sm text-slate-400 leading-relaxed">
+              <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                 SmartOS is a real-time Smart City dashboard powered by ESP32 sensor nodes and Supabase.
                 It ingests multi-sensor telemetry (RFID, IR motion, LDR light, soil moisture),
                 computes analytics, and surfaces AI-driven preventive insights for operations teams.
@@ -138,13 +171,13 @@ const App = () => {
                   <Cpu size={24} className="text-indigo-500" />
                   <h3 className="text-xl font-black uppercase tracking-tight">Technologies Used</h3>
                 </div>
-                <ul className="text-sm text-slate-400 leading-relaxed space-y-2">
-                  <li><span className="font-bold text-slate-200">React + Vite</span> - Fast, modern SPA development</li>
-                  <li><span className="font-bold text-slate-200">Tailwind CSS</span> - Responsive, utility-first styling</li>
-                  <li><span className="font-bold text-slate-200">Supabase</span> - Database, REST, and realtime channels</li>
-                  <li><span className="font-bold text-slate-200">Recharts</span> - Interactive charts and visualizations</li>
-                  <li><span className="font-bold text-slate-200">Lucide Icons</span> - Clean, consistent UI icons</li>
-                  <li><span className="font-bold text-slate-200">Google Gemini API</span> - AI predictions and insights</li>
+                <ul className={`text-sm leading-relaxed space-y-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <li><span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>React + Vite</span> - Fast, modern SPA development</li>
+                  <li><span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Tailwind CSS</span> - Responsive, utility-first styling</li>
+                  <li><span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Supabase</span> - Database, REST, and realtime channels</li>
+                  <li><span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Recharts</span> - Interactive charts and visualizations</li>
+                  <li><span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Lucide Icons</span> - Clean, consistent UI icons</li>
+                  <li><span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Google Gemini API</span> - AI predictions and insights</li>
                 </ul>
               </div>
 
@@ -153,7 +186,7 @@ const App = () => {
                   <Database size={24} className="text-emerald-500" />
                   <h3 className="text-xl font-black uppercase tracking-tight">Data Pipeline</h3>
                 </div>
-                <p className="text-sm text-slate-400 leading-relaxed">
+                <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                   Sensor nodes publish to Supabase `sensor_readings`. The dashboard subscribes to realtime inserts,
                   aggregates analytics (hourly counts, averages, distributions), and updates visualizations live.
                   AI prompts are generated contextually from analytics for concise operational recommendations.

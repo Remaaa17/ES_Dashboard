@@ -35,7 +35,7 @@ const Header = ({
             <p className="text-[10px] font-bold text-slate-500 uppercase">UPTIME</p>
             <p className="text-sm font-black text-emerald-500">{analytics.uptime}%</p>
           </div>
-          <div className="w-px h-8 bg-slate-800" />
+          <div className={`w-px h-8 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
           <div className="text-center">
             <p className="text-[10px] font-bold text-slate-500 uppercase">UPDATED</p>
             <p className="text-sm font-black text-blue-500">{lastUpdate.toLocaleTimeString()}</p>
@@ -45,7 +45,9 @@ const Header = ({
         <button
           onClick={onExportPDF}
           disabled={isGeneratingPDF}
-          className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-slate-800 text-white font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all disabled:opacity-50"
+          className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all disabled:opacity-50 ${
+            isDarkMode ? 'bg-slate-800 text-white' : 'bg-slate-700 text-white'
+          }`}
         >
           {isGeneratingPDF ? <RefreshCw className="animate-spin" size={18} /> : <FileText size={18} />}
           Export PDF
@@ -53,7 +55,9 @@ const Header = ({
 
         <button
           onClick={onExportCSV}
-          className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-slate-700 text-white font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all"
+          className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all ${
+            isDarkMode ? 'bg-slate-700 text-white' : 'bg-slate-600 text-white'
+          }`}
         >
           <Download size={18} />
           Export CSV

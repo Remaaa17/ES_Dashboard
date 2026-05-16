@@ -4,6 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import ChartInsight from '../ui/ChartInsight';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
 
@@ -119,7 +120,7 @@ const RFIDPage = ({ analytics, isDarkMode }) => {
       )}
 
       {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Hourly Trend */}
         <GlassCard title="24-Hour Access Pattern" icon={Activity} color="blue" isDarkMode={isDarkMode}>
@@ -155,6 +156,11 @@ const RFIDPage = ({ analytics, isDarkMode }) => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="rfid-hourly"
+            isDarkMode={isDarkMode}
+            prompt={`RFID Security data: Total scans=${analytics.rfidCount}, Authorized=${authorizedCount}, Denied=${unauthorizedCount}, Security score=${securityScore}%, Peak hour=${peakHours[0]?.hour || 'N/A'}. Analyze the 24-hour access pattern and give a short security insight.`}
+          />
         </GlassCard>
 
         {/* Time Distribution */}
@@ -192,6 +198,11 @@ const RFIDPage = ({ analytics, isDarkMode }) => {
               </PieChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="rfid-distribution"
+            isDarkMode={isDarkMode}
+            prompt={`RFID time distribution: Morning=${morningScans}, Afternoon=${afternoonScans}, Evening=${eveningScans}, Night=${nightScans} scans. Analyze the time period distribution and give a short insight about access patterns.`}
+          />
         </GlassCard>
       </div>
 
@@ -241,22 +252,22 @@ const RFIDPage = ({ analytics, isDarkMode }) => {
         <div className="overflow-x-auto mt-4">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="text-slate-500 border-b border-white/5">
+              <tr className={`border-b ${isDarkMode ? 'text-slate-500 border-white/5' : 'text-slate-600 border-slate-200'}`}>
                 <th className="pb-4 font-bold text-xs uppercase">Time</th>
                 <th className="pb-4 font-bold text-xs uppercase">Card UID</th>
                 <th className="pb-4 font-bold text-xs uppercase">Location</th>
                 <th className="pb-4 text-right font-bold text-xs uppercase">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className={`divide-y ${isDarkMode ? 'divide-white/5' : 'divide-slate-100'}`}>
               {analytics.rfidLast5.length > 0 ? (
                 analytics.rfidLast5.map((log, i) => (
                   <tr key={i} className="group hover:bg-white/5 transition-all">
-                    <td className="py-4 text-slate-400 text-xs">
+                    <td className={`py-4 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                       {new Date(log.created_at).toLocaleTimeString()}
                     </td>
                     <td className="py-4 font-mono font-bold text-sm">{log.rfid_uid || log.value}</td>
-                    <td className="py-4 text-slate-400 text-xs">Main Gate</td>
+                    <td className={`py-4 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Main Gate</td>
                     <td className="py-4 text-right">
                       {log.access_granted === true ? (
                         <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase">

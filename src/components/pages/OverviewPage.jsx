@@ -2,6 +2,7 @@ import { Shield, Sun, Server, Activity, Bell } from 'lucide-react';
 import { ComposedChart, Area, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import NotificationItem from '../ui/NotificationItem';
+import ChartInsight from '../ui/ChartInsight';
 
 const OverviewPage = ({ analytics, data, notifications, isDarkMode }) => {
   return (
@@ -23,14 +24,14 @@ const OverviewPage = ({ analytics, data, notifications, isDarkMode }) => {
         </GlassCard>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <GlassCard
           title="Multi-Sensor Activity"
           icon={Activity}
-          className="xl:col-span-2"
+          className="lg:col-span-2"
           isDarkMode={isDarkMode}
         >
-          <p className="text-xs text-slate-500 mb-4">Real-time sensor readings showing combined data from all connected devices</p>
+          <p className={`text-xs mb-4 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Real-time sensor readings showing combined data from all connected devices</p>
           <div className="h-[350px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={data.slice(-40)}>
@@ -59,6 +60,11 @@ const OverviewPage = ({ analytics, data, notifications, isDarkMode }) => {
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="overview-activity"
+            isDarkMode={isDarkMode}
+            prompt={`SmartOS sensor data: RFID scans=${analytics.rfidCount}, Avg light=${analytics.avgLdr} LUX, Uptime=${analytics.uptime}%. Analyze the multi-sensor activity chart and give a short operational insight.`}
+          />
         </GlassCard>
 
         <GlassCard title="Intelligence Stream" icon={Bell} isDarkMode={isDarkMode}>
@@ -68,7 +74,7 @@ const OverviewPage = ({ analytics, data, notifications, isDarkMode }) => {
               <NotificationItem key={n.id} notification={n} />
             ))}
             {notifications.length === 0 && (
-              <div className="text-center py-10 opacity-20 italic text-xs">
+              <div className={`text-center py-10 opacity-40 italic text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Listening for city events...
               </div>
             )}

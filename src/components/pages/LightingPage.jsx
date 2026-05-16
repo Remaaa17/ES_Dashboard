@@ -4,6 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadialBarChart, RadialBar
 } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import ChartInsight from '../ui/ChartInsight';
 
 const LightingPage = ({ analytics, isDarkMode }) => {
   // حساب توفير الطاقة المحتمل
@@ -95,7 +96,7 @@ const LightingPage = ({ analytics, isDarkMode }) => {
       )}
 
       {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Light History */}
         <GlassCard title="24-Hour Light Intensity" icon={Activity} color="yellow" isDarkMode={isDarkMode}>
@@ -131,6 +132,11 @@ const LightingPage = ({ analytics, isDarkMode }) => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="lighting-intensity"
+            isDarkMode={isDarkMode}
+            prompt={`Smart Lighting data: Avg LUX=${analytics.avgLdr}, Darkness hours=${analytics.darknessDuration}h, Day/night transitions=${analytics.thresholdCrossings}, Energy savings potential=${potentialSavings}%. Analyze the 24-hour light intensity chart and give a short insight.`}
+          />
         </GlassCard>
 
         {/* Day/Night Distribution */}
@@ -167,12 +173,17 @@ const LightingPage = ({ analytics, isDarkMode }) => {
               </PieChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="lighting-daynight"
+            isDarkMode={isDarkMode}
+            prompt={`Day vs Night distribution: Darkness=${analytics.darknessDuration}h out of 24h, Avg day light=${avgDayLight} LUX, Avg night light=${avgNightLight} LUX. Analyze the day/night distribution and give a short energy optimization insight.`}
+          />
         </GlassCard>
       </div>
 
       {/* Lighting Efficiency Gauge */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <GlassCard title="Lighting Efficiency Score" icon={Zap} color="emerald" className="xl:col-span-1" isDarkMode={isDarkMode}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <GlassCard title="Lighting Efficiency Score" icon={Zap} color="emerald" className="lg:col-span-1" isDarkMode={isDarkMode}>
           <p className="text-xs text-slate-500 mb-4">System responsiveness to light changes</p>
           <div className="flex flex-col items-center py-6">
             <div className="relative w-48 h-24 overflow-hidden">
@@ -203,7 +214,7 @@ const LightingPage = ({ analytics, isDarkMode }) => {
           </div>
         </GlassCard>
 
-        <GlassCard title="Light Level Comparison" icon={Sun} color="blue" className="xl:col-span-2" isDarkMode={isDarkMode}>
+        <GlassCard title="Light Level Comparison" icon={Sun} color="blue" className="lg:col-span-2" isDarkMode={isDarkMode}>
           <p className="text-xs text-slate-500 mb-4">Average light intensity across different periods</p>
           <div className="h-[250px] mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -222,6 +233,11 @@ const LightingPage = ({ analytics, isDarkMode }) => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="lighting-comparison"
+            isDarkMode={isDarkMode}
+            prompt={`Light level comparison: Day avg=${avgDayLight} LUX, Night avg=${avgNightLight} LUX, Overall avg=${analytics.avgLdr} LUX, Efficiency score=${lightingEfficiency}%. Give a short insight about lighting efficiency.`}
+          />
         </GlassCard>
       </div>
 

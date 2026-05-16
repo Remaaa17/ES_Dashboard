@@ -7,7 +7,7 @@ const GlassCard = ({ title, children, icon: Icon, color = 'blue', className = ''
     } ${className}`}
   >
     <div className="flex items-center justify-between mb-6">
-      <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2 leading-none">
+      <h3 className={`text-xs font-black uppercase tracking-widest flex items-center gap-2 leading-none ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>
         {Icon && <Icon size={16} className={`text-${color}-500`} />} {title}
       </h3>
       <div className={`w-2 h-2 rounded-full bg-${color}-500 shadow-[0_0_10px_rgba(0,0,0,0.2)]`} />

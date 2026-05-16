@@ -1,14 +1,16 @@
 import { 
-  BrainCircuit, LayoutDashboard, Info, Moon, Sun, Shield, Sprout, Lightbulb
+  BrainCircuit, LayoutDashboard, Info, Moon, Sun, Shield, Sprout, Lightbulb, Sparkles, MessageSquare
 } from 'lucide-react';
 
-const SidebarItem = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
+const SidebarItem = ({ id, icon: Icon, label, activeTab, setActiveTab, isDarkMode }) => (
   <button
     onClick={() => setActiveTab(id)}
     className={`w-full flex items-center gap-4 px-6 py-4 transition-all relative ${
       activeTab === id
         ? 'text-blue-500 bg-blue-500/5'
-        : 'text-slate-500 hover:text-slate-200 hover:bg-white/5'
+        : isDarkMode
+          ? 'text-slate-500 hover:text-slate-200 hover:bg-white/5'
+          : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
     }`}
   >
     {activeTab === id && (
@@ -36,54 +38,28 @@ const Sidebar = ({ activeTab, setActiveTab, isDarkMode, setIsDarkMode }) => {
       </div>
 
       <nav className="flex-1 space-y-1">
-        <SidebarItem
-          id="overview"
-          icon={LayoutDashboard}
-          label="Overview"
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-        <SidebarItem
-          id="rfid"
-          icon={Shield}
-          label="RFID Security"
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-        <SidebarItem
-          id="lighting"
-          icon={Lightbulb}
-          label="Smart Lighting"
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-        <SidebarItem
-          id="soil"
-          icon={Sprout}
-          label="Soil & Irrigation"
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-        <SidebarItem
-          id="about"
-          icon={Info}
-          label="About"
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
+        <SidebarItem id="overview" icon={LayoutDashboard} label="Overview" activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} />
+        <SidebarItem id="predictions" icon={Sparkles} label="AI Predictions" activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} />
+        <SidebarItem id="chatbot" icon={MessageSquare} label="AI Chat" activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} />
+        <SidebarItem id="rfid" icon={Shield} label="RFID Security" activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} />
+        <SidebarItem id="lighting" icon={Lightbulb} label="Smart Lighting" activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} />
+        <SidebarItem id="soil" icon={Sprout} label="Soil & Irrigation" activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} />
+        <SidebarItem id="about" icon={Info} label="About" activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} />
       </nav>
 
-      <div className="p-6 border-t border-white/5">
+      <div className={`p-6 border-t ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="flex items-center gap-4 px-4 py-3 rounded-2xl w-full text-slate-500 hover:bg-white/5 transition-all mb-4"
+          className={`flex items-center gap-4 px-4 py-3 rounded-2xl w-full transition-all mb-4 ${
+            isDarkMode ? 'text-slate-500 hover:bg-white/5' : 'text-slate-600 hover:bg-slate-100'
+          }`}
         >
           {isDarkMode ? (
             <Sun size={20} className="text-yellow-400" />
           ) : (
             <Moon size={20} className="text-blue-600" />
           )}
-          <span className="text-xs font-black uppercase tracking-widest">Theme Mode</span>
+          <span className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`}>Theme Mode</span>
         </button>
       </div>
     </aside>

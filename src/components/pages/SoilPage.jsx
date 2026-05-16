@@ -4,6 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadialBarChart, RadialBar
 } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import ChartInsight from '../ui/ChartInsight';
 
 const SoilPage = ({ analytics, isDarkMode }) => {
   // حساب توصيات الري
@@ -106,8 +107,8 @@ const SoilPage = ({ analytics, isDarkMode }) => {
         </GlassCard>
       )}
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      {/* Charts - Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Moisture History */}
         <GlassCard title="Moisture Trend (30 Readings)" icon={Activity} color="cyan" isDarkMode={isDarkMode}>
@@ -153,6 +154,11 @@ const SoilPage = ({ analytics, isDarkMode }) => {
               <span className="text-slate-500">Wet (&gt;70%)</span>
             </span>
           </div>
+          <ChartInsight
+            chartId="soil-trend"
+            isDarkMode={isDarkMode}
+            prompt={`Soil moisture data: Current=${analytics.lastSoilVal}%, Status=${analytics.moistureStatus}, Trend=${trendDirection}, Variability=±${analytics.moistureVariability}%, Stability=${stabilityScore}%. Analyze the moisture trend chart and give a short irrigation insight.`}
+          />
         </GlassCard>
 
         {/* Condition Distribution */}
@@ -179,12 +185,17 @@ const SoilPage = ({ analytics, isDarkMode }) => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="soil-distribution"
+            isDarkMode={isDarkMode}
+            prompt={`Soil moisture state distribution: Current moisture=${analytics.lastSoilVal}%, Dry/Optimal/Wet breakdown from history. Analyze the moisture state distribution and give a short insight about soil health.`}
+          />
         </GlassCard>
       </div>
 
       {/* Moisture Gauge */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <GlassCard title="Current Status Gauge" icon={Gauge} color="cyan" className="xl:col-span-1" isDarkMode={isDarkMode}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <GlassCard title="Current Status Gauge" icon={Gauge} color="cyan" className="lg:col-span-1" isDarkMode={isDarkMode}>
           <p className="text-xs text-slate-500 mb-4">Visual indicator of current moisture level</p>
           <div className="flex flex-col items-center py-6">
             <div className="relative w-48 h-24 overflow-hidden">
@@ -215,7 +226,7 @@ const SoilPage = ({ analytics, isDarkMode }) => {
           </div>
         </GlassCard>
 
-        <GlassCard title="Stacked Moisture Analysis" icon={Activity} color="purple" className="xl:col-span-2" isDarkMode={isDarkMode}>
+        <GlassCard title="Stacked Moisture Analysis" icon={Activity} color="purple" className="lg:col-span-2" isDarkMode={isDarkMode}>
           <p className="text-xs text-slate-500 mb-4">Detailed breakdown of moisture states over time</p>
           <div className="h-[250px] mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -236,6 +247,11 @@ const SoilPage = ({ analytics, isDarkMode }) => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
+          <ChartInsight
+            chartId="soil-stacked"
+            isDarkMode={isDarkMode}
+            prompt={`Stacked moisture analysis: Current=${analytics.lastSoilVal}%, Trend=${trendDirection}, Variability=±${analytics.moistureVariability}%, Next irrigation in ${daysUntilIrrigation} days. Give a short insight about moisture stability over time.`}
+          />
         </GlassCard>
       </div>
 
