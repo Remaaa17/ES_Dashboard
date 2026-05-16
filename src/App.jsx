@@ -30,7 +30,7 @@ const App = () => {
 
   // Custom Hooks
   const { supabase, loading: supabaseLoading } = useSupabase();
-  const { notifications, addNotification } = useNotifications();
+  const { notifications, addNotification } = useNotifications(supabase);
   const { aiInsight, isAiLoading, getAiPrediction } = useAI(addNotification);
   const { sendChatMessage, isChatLoading } = useChatAI();
   
